@@ -145,30 +145,26 @@ NSData* extractImageData(UIImage* image){
 
 
 
--(NSMutableDictionary *)mapImageToAsset:(UIImage *)image data:(NSData *)data phAsset:(PHAsset * _Nullable)phAsset {
-    NSString *fileType = [ImagePickerUtils getFileType:data];
+-(NSMutableDictionary *)mapImageToAsset:(UIImage *)image phAsset:(PHAsset * _Nullable)phAsset {
+//    NSString *fileType = [ImagePickerUtils getFileType:data];
     if (target == camera) {
         if ([self.options[@"saveToPhotos"] boolValue]) {
             UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
         }
-        data = extractImageData(image);
+//        data = extractImageData(image);
     }
     
     UIImage* newImage = image;
-    if (![fileType isEqualToString:@"gif"]) {
-        newImage = [ImagePickerUtils resizeImage:image
-                                     maxWidth:[self.options[@"maxWidth"] floatValue]
-                                    maxHeight:[self.options[@"maxHeight"] floatValue]];
-    }
+//    if (![fileType isEqualToString:@"gif"]) {
+//        newImage = [ImagePickerUtils resizeImage:image
+//                                     maxWidth:[self.options[@"maxWidth"] floatValue]
+//                                    maxHeight:[self.options[@"maxHeight"] floatValue]];
+//    }
 
     float quality = [self.options[@"quality"] floatValue];
-    if (![image isEqual:newImage] || (quality >= 0 && quality < 1)) {
-        if ([fileType isEqualToString:@"jpg"]) {
-            data = UIImageJPEGRepresentation(newImage, quality);
-        } else if ([fileType isEqualToString:@"png"]) {
-            data = UIImagePNGRepresentation(newImage);
-        }
-    }
+    
+    NSData *data = UIImageJPEGRepresentation(newImage, quality);
+    
     
     NSMutableDictionary *asset = [[NSMutableDictionary alloc] init];
     NSString *fileName = [self getImageFileName:@"jpeg"];
@@ -470,7 +466,6 @@ CGImagePropertyOrientation CGImagePropertyOrientationForUIImageOrientation(UIIma
     }
 
     [results enumerateObjectsUsingBlock:^(PHPickerResult *result, NSUInteger index, BOOL *stop) {
-        PHAsset *asset = nil;
         NSItemProvider *provider = result.itemProvider;
         PHFetchResult* fetchResult = [PHAsset fetchAssetsWithLocalIdentifiers:@[result.assetIdentifier] options:nil];
         PHAsset *asset = fetchResult.firstObject;
@@ -489,7 +484,7 @@ CGImagePropertyOrientation CGImagePropertyOrientationForUIImageOrientation(UIIma
                 NSData *data = [[NSData alloc] initWithContentsOfURL:url];
                 UIImage *image = [[UIImage alloc] initWithData:data];
                 
-                assets[index] = [self mapImageToAsset:image data:data phAsset:asset];
+                assets[index] = [self mapImageToAsset:image phAsset:asset];
                 dispatch_group_leave(completionGroup);
             }];
         } else if ([provider hasItemConformingToTypeIdentifier:(NSString *)kUTTypeMovie]) {
